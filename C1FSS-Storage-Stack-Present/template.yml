@@ -84,11 +84,6 @@ Resources:
               Action:
                 - s3:ListAllMyBuckets
               Resource: "*"
-            - Sid: STSPermissions
-              Effect: Allow
-              Action:
-                - sts:GetCallerIdentity
-              Resource: "*"
 
       Events:
         CWSchedule:
