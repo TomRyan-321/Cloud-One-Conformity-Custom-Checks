@@ -54,7 +54,7 @@ Parameters:
     Default: .*-quarantine|.*-promote
 
 Conditions:
-  IsRegexNone: !Not
+  RegexIsNotNone: !Not
     - !Equals [!Ref BucketExceptionRegex, None]
 
 Resources:
@@ -75,7 +75,7 @@ Resources:
           CC_CHECKSEV: !Ref ConformityCheckSeverity
           FSS_APIKEY: !Ref FSSApiKey
           REGEX_FILTER:
-            !If [IsRegexNone, !Ref BucketExceptionRegex, !Ref AWS::NoValue]
+            !If [RegexIsNotNone, !Ref BucketExceptionRegex, !Ref AWS::NoValue]
 
       Policies:
         - Statement:
