@@ -35,9 +35,9 @@ Parameters:
     Description: Enter your Conformity API Key. (https://www.cloudconformity.com/help/public-api/api-keys.html)
   ConformityCustomCheckId:
     Type: String
-    Description: Enter the custom check ID number to track FSS findings as in Conformity (allowed values 001-999).
-    Default: "001"
-    AllowedPattern: (?=.*[1-9])\d{1,3}?$
+    Description: Enter the custom check ID number to track FSS findings as in Conformity (allowed values CUSTOM-001-999).
+    Default: CUSTOM-001
+    AllowedPattern: CUSTOM-(?=.*[1-9])\d{1,3}?$
   ConformityCheckSeverity:
     Type: String
     Description: Please enter the severity level to track FSS findings as in Conformity.
@@ -71,7 +71,7 @@ Resources:
         Variables:
           CC_REGION: !Ref ConformityRegion
           CC_APIKEY: !Ref ConformityApiKey
-          CC_CUSTOMCHECKID: !Sub "CUSTOM-${ConformityCustomCheckId}"
+          CC_CUSTOMCHECKID: !Ref ConformityCustomCheckId
           CC_CHECKSEV: !Ref ConformityCheckSeverity
           FSS_APIKEY: !Ref FSSApiKey
           REGEX_FILTER:
