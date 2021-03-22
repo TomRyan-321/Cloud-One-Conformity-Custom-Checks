@@ -1,6 +1,7 @@
 import boto3
 import json
 import os
+import re
 import urllib3
 
 ccapikey = os.environ["CC_APIKEY"]
@@ -8,6 +9,7 @@ ccregion = os.environ.get("CC_REGION", "us-west-2")
 fssapikey = os.environ["FSS_APIKEY"]
 customcheckid = os.environ.get("CC_CUSTOMCHECKID", "CUSTOM-002").upper()
 customchecksev = os.environ.get("CC_CHECKSEV", "MEDIUM").upper()
+regexfilter = os.environ.get("REGEX_FILTER", None)
 
 http = urllib3.PoolManager()
 
@@ -60,12 +62,15 @@ def lambda_handler(event, context):
     fss_stacks = get_fss_stacks()
 
     for bucket in s3buckets:
-        if bucket in fss_stacks:
+        if regexfilter is not None and re.search(regexfilter, bucket):
             status = "SUCCESS"
-            message = "C1 File Storage Security is enabled for bucket " + bucket
+            message = "C1 File Storage Security is exempted for bucket: " + bucket + " using regex filter: " + regexfilter
+        elif bucket in fss_stacks:
+            status = "SUCCESS"
+            message = "C1 File Storage Security is enabled for bucket: " + bucket
         else:
             status = "FAILURE"
-            message = "C1 File Storage Security is not enabled for bucket " + bucket
+            message = "C1 File Storage Security is not enabled for bucket: " + bucket
 
         s3arn = "arn:aws:s3:::" + bucket
         s3consoleurl = "https://s3.console.aws.amazon.com/s3/buckets/" + bucket

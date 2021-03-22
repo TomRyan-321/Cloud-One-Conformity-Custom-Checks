@@ -10,7 +10,8 @@ Metadata:
     SpdxLicenseId: MIT
     LicenseUrl: ../LICENSE
     ReadmeUrl: ../README.md
-    Labels: [trendmicro, cloudone, filestorage, s3, bucket, conformity, customcheck]
+    Labels:
+      [trendmicro, cloudone, filestorage, s3, bucket, conformity, customcheck]
     HomePageUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks
     SemanticVersion: 1.0.0
     SourceCodeUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks/tree/main/C1FSS-Storage-Stack-Present
@@ -18,11 +19,11 @@ Metadata:
 Parameters:
   FSSApiKey:
     Type: String
-    Description: Enter your File Storage Security API Key (https://cloudone.trendmicro.com/docs/file-storage-security/api-create-stack/#Prerequisite)
+    Description: Enter your File Storage Security API Key. (https://cloudone.trendmicro.com/docs/file-storage-security/api-create-stack/#Prerequisite)
     NoEcho: true
   ConformityRegion:
     Type: String
-    Description: Region where your conformity account is hosted (us-west-2 for Cloud One customers)
+    Description: Region where your conformity account is hosted. (us-west-2 for Cloud One customers)
     Default: us-west-2
     AllowedValues:
       - us-west-2
@@ -31,15 +32,15 @@ Parameters:
   ConformityApiKey:
     Type: String
     NoEcho: true
-    Description: Enter your Conformity API Key (https://www.cloudconformity.com/help/public-api/api-keys.html)
+    Description: Enter your Conformity API Key. (https://www.cloudconformity.com/help/public-api/api-keys.html)
   ConformityCustomCheckId:
     Type: String
-    Description: Enter the custom check ID number to track FSS findings as in Conformity (allowed values 001-999)
-    Default: 001
+    Description: Enter the custom check ID number to track FSS findings as in Conformity (allowed values 001-999).
+    Default: "001"
     AllowedPattern: (?=.*[1-9])\d{1,3}?$
   ConformityCheckSeverity:
     Type: String
-    Description: Please enter the severity level to track FSS findings as in Conformity
+    Description: Please enter the severity level to track FSS findings as in Conformity.
     Default: MEDIUM
     AllowedValues:
       - LOW
@@ -47,6 +48,14 @@ Parameters:
       - HIGH
       - VERY_HIGH
       - EXTREME
+  BucketExceptionRegex:
+    Type: String
+    Description: "Please enter a valid regular expression to exempt buckets from this check or leave value as \"None\". Example Regular Expression: .*-quarantine|.*-promote"
+    Default: None
+
+Conditions:
+  IsRegexNone: !Not
+    - !Equals [!Ref BucketExceptionRegex, None]
 
 Resources:
   FSStoConformityChecksFunction:
@@ -65,23 +74,26 @@ Resources:
           CC_CUSTOMCHECKID: !Sub "CUSTOM-${ConformityCustomCheckId}"
           CC_CHECKSEV: !Ref ConformityCheckSeverity
           FSS_APIKEY: !Ref FSSApiKey
+          REGEX_FILTER:
+            !If [IsRegexNone, !Ref BucketExceptionRegex, !Ref AWS::NoValue]
+
       Policies:
-      - Statement:
-        - Sid: S3Permissions
-          Effect: Allow
-          Action:
-          - s3:ListAllMyBuckets
-          Resource: "*"
-        - Sid: STSPermissions
-          Effect: Allow
-          Action:
-          - sts:GetCallerIdentity
-          Resource: "*"
+        - Statement:
+            - Sid: S3Permissions
+              Effect: Allow
+              Action:
+                - s3:ListAllMyBuckets
+              Resource: "*"
+            - Sid: STSPermissions
+              Effect: Allow
+              Action:
+                - sts:GetCallerIdentity
+              Resource: "*"
 
       Events:
         CWSchedule:
           Type: Schedule
           Properties:
-            Schedule: 'rate(1 hour)'
+            Schedule: "rate(1 hour)"
             Description: Hourly trigger for Conformity Custom Check - C1FSS Storage Stack Present
             Enabled: True
