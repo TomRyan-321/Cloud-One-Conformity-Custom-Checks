@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: cloudone-conformity-custom-checks-fss-stack-present-for-bucket
+    Description: >-
+      On a hourly schedule check all buckets in an account and if they have Cloud One File Storage Security stack deployed scanning objects for malware.
+    Author: Tom Ryan
+    SpdxLicenseId: MIT
+    LicenseUrl: ../LICENSE
+    ReadmeUrl: README.md
+    Labels: [trendmicro, cloudone, filestorage, s3, bucket, conformity, customcheck]
+    HomePageUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks
+    SemanticVersion: 1.0.0
+    SourceCodeUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks/tree/master/Cloud-One-Conformity-Custom-Checks/C1FSS-Storage-Stack-Present
+
+Parameters:
+  FSSApiKey:
+    Type: String
+    Description: Enter your File Storage Security API Key (https://cloudone.trendmicro.com/docs/file-storage-security/api-create-stack/#Prerequisite)
+    NoEcho: true
+  ConformityRegion:
+    Type: String
+    Description: Region where your conformity account is hosted (us-west-2 for Cloud One customers)
+    Default: us-west-2
+    AllowedValues:
+      - us-west-2
+      - ap-southeast-2
+      - eu-west-1
+  ConformityApiKey:
+    Type: String
+    NoEcho: true
+    Description: Enter your Conformity API Key (https://www.cloudconformity.com/help/public-api/api-keys.html)
+  ConformityCustomCheckId:
+    Type: String
+    Description: Enter the custom check ID number to track FSS findings as in Conformity (allowed values 001-999)
+    AllowedPattern: (?=.*[1-9])\d{1,3}?$
+  ConformityCheckSeverity:
+    Type: String
+    Description: Please enter the severity level to track FSS findings as in Conformity
+    Default: VERY_HIGH
+    AllowedValues:
+      - LOW
+      - MEDIUM
+      - HIGH
+      - VERY_HIGH
+      - EXTREME
+
+Resources:
+  FSStoConformityChecksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      MemorySize: 256
+      Timeout: 300
+      Tracing: Active
+      Environment:
+        Variables:
+          CC_REGION: !Ref ConformityRegion
+          CC_APIKEY: !Ref ConformityApiKey
+          CC_CUSTOMCHECKID: !Sub "CUSTOM-${ConformityCustomCheckId}"
+          CC_CHECKSEV: !Ref ConformityCheckSeverity
+          FSS_APIKEY: !Ref FSSApiKey
+
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(1 hour)'
+            Description: Hourly trigger for Conformity Custom Check - C1FSS Storage Stack Present
+            Enabled: True
