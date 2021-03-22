@@ -50,8 +50,8 @@ Parameters:
       - EXTREME
   BucketExceptionRegex:
     Type: String
-    Description: "Please enter a valid regular expression to exempt buckets from this check or leave value as \"None\". Example Regular Expression: .*-quarantine|.*-promote"
-    Default: None
+    Description: 'Please enter a valid regular expression to exempt buckets from this check or set value as None to have no exceptions. ( Example Regular Expression: .*-quarantine|.*-promote ) '
+    Default: .*-quarantine|.*-promote
 
 Conditions:
   IsRegexNone: !Not
