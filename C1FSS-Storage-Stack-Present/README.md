@@ -1,6 +1,9 @@
 # Cloud One Conformity Custom Check - File Storage Security Stack deployed for bucket.
-
+## Description
 Once an hour get a list of all buckets within an AWS account and check if they have Trend Micro's Cloud One File Storage Security stack deployed to scan new objects for malware. The solution supports regular expression passed through as an environment variable to filter out buckets. Example: To exclude any buckets with name suffix of `-promote` or `-quarantine` use the default regex filter of: `.*-quarantine|.*-promote`
+
+![Screenshot](doc/screenshot.png)
+
 
 ## Prerequisites
 1. **Install AWS SAM CLI**
