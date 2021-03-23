@@ -28,8 +28,8 @@ Note: This tracks all buckets under `global` region within Conformity as bucket 
 1. Clone this repository from [Github](https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks).
 2. Using your terminal navigate to the `C1FSS-Storage-Stack-Present` folder contained within the above cloned repository. Example: `User@Host:cd ~/cloud-One-Conformity-Custom-Checks/C1FSS-Storage-Stack-Present`
 3. Deploy the SAM template in guided mode. Example: `sam deploy --guided`
-4. Fill in the required parameters as promted. Defaults are provided for all values with the exception of FSS & Conformity API keys which were obtained in prerequiste steps.
-5. Select `Yes` by press `Y` to the following prompts: `Confirm changes before deploy`, `Allow SAM CLI IAM role creation`
+4. Fill in the required parameters as prompted. Defaults are provided for all values with the exception of FSS & Conformity API keys which were obtained in prerequiste steps.
+5. Select `Yes` by press `Y` to the following prompts: `Confirm changes before deploying`, `Allow SAM CLI IAM role creation`
 6. Optionally save the above parameters to a configuration file when promtped (note API keys will **NOT** be written to this file and always need to be re-entered if redeploying)
 7. Review the resources to be created/updated and select `Yes` by pressing `Y` to deploy the solution.
 
