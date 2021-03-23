@@ -4,14 +4,18 @@ import os
 import re
 import urllib3
 
-ccapikey = os.environ["CC_APIKEY"]
 ccregion = os.environ.get("CC_REGION", "us-west-2")
-fssapikey = os.environ["FSS_APIKEY"]
+secretsarn = os.environ["SECRETS_ARN"]
 customcheckid = os.environ.get("CC_CUSTOMCHECKID", "CUSTOM-002").upper()
 customchecksev = os.environ.get("CC_CHECKSEV", "MEDIUM").upper()
 regexfilter = os.environ.get("REGEX_FILTER", None)
 
 http = urllib3.PoolManager()
+
+secrets = boto3.client("secretsmanager").get_secret_value(SecretId=secretsarn)
+secrets_data = json.loads(secrets["SecretString"])
+ccapikey = secrets_data["ccapikey"]
+fssapikey = secrets_data["fssapikey"]
 
 conformityheaders = {
     "Content-Type": "application/vnd.api+json",

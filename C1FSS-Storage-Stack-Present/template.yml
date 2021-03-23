@@ -50,7 +50,7 @@ Parameters:
       - EXTREME
   BucketExceptionRegex:
     Type: String
-    Description: 'Please enter a valid regular expression to exempt buckets from this check or set value as None to have no exceptions. ( Example Regular Expression: .*-quarantine|.*-promote ) '
+    Description: "Please enter a valid regular expression to exempt buckets from this check or set value as None to have no exceptions. ( Example Regular Expression: .*-quarantine|.*-promote ) "
     Default: .*-quarantine|.*-promote
 
 Conditions:
@@ -58,7 +58,13 @@ Conditions:
     - !Equals [!Ref BucketExceptionRegex, None]
 
 Resources:
-  FSStoConformityChecksFunction:
+  FSSDeployedConformityChecksSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Conformity API Key Secret
+      SecretString: !Sub '{"ccapikey":"${ConformityApiKey}","fssapikey":"${FSSApiKey}"}'
+
+  FSSDeployedConformityChecksFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./src
@@ -70,13 +76,11 @@ Resources:
       Environment:
         Variables:
           CC_REGION: !Ref ConformityRegion
-          CC_APIKEY: !Ref ConformityApiKey
+          SECRETS_ARN: !Ref FSSDeployedConformityChecksSecret
           CC_CUSTOMCHECKID: !Ref ConformityCustomCheckId
           CC_CHECKSEV: !Ref ConformityCheckSeverity
-          FSS_APIKEY: !Ref FSSApiKey
           REGEX_FILTER:
             !If [RegexIsNotNone, !Ref BucketExceptionRegex, !Ref AWS::NoValue]
-
       Policies:
         - Statement:
             - Sid: S3Permissions
@@ -84,7 +88,11 @@ Resources:
               Action:
                 - s3:ListAllMyBuckets
               Resource: "*"
-
+            - Sid: GetSecretValue
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref FSSDeployedConformityChecksSecret
       Events:
         CWSchedule:
           Type: Schedule
