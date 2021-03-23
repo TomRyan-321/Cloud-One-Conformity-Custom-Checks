@@ -20,7 +20,7 @@ conformityheaders = {
 
 
 def get_cc_accountid(awsaccountid):
-    accountsapi = "https://" + ccregion + "-api.cloudconformity.com/v1/accounts"
+    accountsapi = f"https://{ccregion}-api.cloudconformity.com/v1/accounts"
     r = http.request("GET", accountsapi, headers=conformityheaders)
     accounts = json.loads(r.data.decode("utf-8"))["data"]
     for account in accounts:
@@ -62,15 +62,15 @@ def lambda_handler(event, context):
     fss_stacks = get_fss_stacks()
 
     for bucket in s3buckets:
-        if regexfilter is not None and re.search(regexfilter, bucket):
+        if regexfilter and re.search(regexfilter, bucket):
             status = "SUCCESS"
-            message = "C1 File Storage Security is exempted for bucket: " + bucket + " using regex filter: " + regexfilter
+            message = fr"C1 File Storage Security is exempted for bucket: {bucket} using regex filter: {regexfilter}"
         elif bucket in fss_stacks:
             status = "SUCCESS"
-            message = "C1 File Storage Security is enabled for bucket: " + bucket
+            message = f"C1 File Storage Security is enabled for bucket: {bucket}"
         else:
             status = "FAILURE"
-            message = "C1 File Storage Security is not enabled for bucket: " + bucket
+            message = f"C1 File Storage Security is not enabled for bucket: {bucket}"
 
         s3arn = "arn:aws:s3:::" + bucket
         s3consoleurl = "https://s3.console.aws.amazon.com/s3/buckets/" + bucket
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
         }
 
         bodyencoded = json.dumps(checksdata).encode("utf-8")
-        checksapi = "https://" + ccregion + "-api.cloudconformity.com/v1/checks"
+        checksapi = f"https://{ccregion}-api.cloudconformity.com/v1/checks"
 
         r = http.request("POST", checksapi, body=bodyencoded, headers=conformityheaders)
         print(r.data.decode("utf-8"))
