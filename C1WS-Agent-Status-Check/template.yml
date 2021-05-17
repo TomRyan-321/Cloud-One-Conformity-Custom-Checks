@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: cloudone-conformity-custom-checks-ws-stack-present-for-bucket
+    Description: >-
+      On a hourly schedule check all the agent status reported by Cloud One Workload Security for all instances visible from the AWS Cloud Connector.
+    Author: Tom Ryan
+    SpdxLicenseId: MIT
+    LicenseUrl: ../LICENSE
+    ReadmeUrl: README.md
+    Labels:
+      [trendmicro, cloudone, workloadsecurity, ec2, ec2instance, conformity, customcheck, security, compliance]
+    HomePageUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks
+    SemanticVersion: 1.0.0
+    SourceCodeUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks/tree/main/C1WS-Agent-Status-Check
+
+Parameters:
+  WSApiKey:
+    Type: String
+    Description: Enter your Workload Security API Key. (https://cloudone.trendmicro.com/docs/workload-security/api-key-create-console/)
+    NoEcho: true
+  ConformityRegion:
+    Type: String
+    Description: Region where your conformity account is hosted. (us-west-2 for Cloud One customers)
+    Default: us-west-2
+    AllowedValues:
+      - us-west-2
+      - ap-southeast-2
+      - eu-west-1
+  ConformityApiKey:
+    Type: String
+    NoEcho: true
+    Description: Enter your Conformity API Key. (https://www.cloudconformity.com/help/public-api/api-keys.html)
+  ConformityCustomCheckId:
+    Type: String
+    Description: Enter the custom check ID number to track WS findings as in Conformity (allowed values CUSTOM-001-999).
+    Default: CUSTOM-100
+    AllowedPattern: CUSTOM-(?=.*[1-9])\d{3}?$
+  ConformityCheckSeverity:
+    Type: String
+    Description: Please enter the severity level to track WS findings as in Conformity.
+    Default: MEDIUM
+    AllowedValues:
+      - LOW
+      - MEDIUM
+      - HIGH
+      - VERY_HIGH
+      - EXTREME
+
+Resources:
+  WSAgentStatusConformityChecksSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Conformity API Key Secret
+      SecretString: !Sub '{"ccapikey":"${ConformityApiKey}","wsapikey":"${WSApiKey}"}'
+
+  WSAgentStatusConformityChecksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: handler.lambda_handler
+      Runtime: python3.8
+      MemorySize: 256
+      Timeout: 300
+      Tracing: Active
+      Environment:
+        Variables:
+          CC_REGION: !Ref ConformityRegion
+          SECRETS_ARN: !Ref WSAgentStatusConformityChecksSecret
+          CC_CUSTOMCHECKID: !Ref ConformityCustomCheckId
+          CC_CHECKSEV: !Ref ConformityCheckSeverity
+      Policies:
+        - Statement:
+            - Sid: GetSecretValue
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref WSAgentStatusConformityChecksSecret
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: "rate(1 hour)"
+            Description: Hourly trigger for Conformity Custom Check - C1WS Agent Status Check
+            Enabled: True
