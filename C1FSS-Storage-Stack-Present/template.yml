@@ -36,7 +36,7 @@ Parameters:
   ConformityCustomCheckId:
     Type: String
     Description: Enter the custom check ID number to track FSS findings as in Conformity (allowed values CUSTOM-001-999).
-    Default: CUSTOM-002
+    Default: CUSTOM-120
     AllowedPattern: CUSTOM-(?=.*[1-9])\d{3}?$
   ConformityCheckSeverity:
     Type: String

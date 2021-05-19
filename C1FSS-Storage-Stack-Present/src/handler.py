@@ -6,7 +6,7 @@ import urllib3
 
 ccregion = os.environ.get("CC_REGION", "us-west-2")
 secretsarn = os.environ["SECRETS_ARN"]
-customcheckid = os.environ.get("CC_CUSTOMCHECKID", "CUSTOM-002").upper()
+customcheckid = os.environ.get("CC_CUSTOMCHECKID", "CUSTOM-120").upper()
 customchecksev = os.environ.get("CC_CHECKSEV", "MEDIUM").upper()
 regexfilter = os.environ.get("REGEX_FILTER", None)
 
