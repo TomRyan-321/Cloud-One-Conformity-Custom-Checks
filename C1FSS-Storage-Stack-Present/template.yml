@@ -13,7 +13,7 @@ Metadata:
     Labels:
       [trendmicro, cloudone, filestorage, s3, bucket, conformity, customcheck]
     HomePageUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks
-    SemanticVersion: 1.0.0
+    SemanticVersion: 1.0.1
     SourceCodeUrl: https://github.com/TomRyan-321/Cloud-One-Conformity-Custom-Checks/tree/main/C1FSS-Storage-Stack-Present
 
 Parameters:

@@ -1,4 +1,5 @@
 import boto3
+import copy
 import json
 import os
 import re
@@ -28,8 +29,11 @@ def get_cc_accountid(awsaccountid):
     r = http.request("GET", accountsapi, headers=conformityheaders)
     accounts = json.loads(r.data.decode("utf-8"))["data"]
     for account in accounts:
-        if account["attributes"]["awsaccount-id"] == awsaccountid:
-            return account["id"]
+        try:
+            if account["attributes"]["awsaccount-id"] == awsaccountid:
+                return account["id"]
+        except:
+            pass
 
 
 def get_s3_buckets():
@@ -64,7 +68,8 @@ def lambda_handler(event, context):
     ccaccountid = get_cc_accountid(awsaccountid)
     s3buckets = get_s3_buckets()
     fss_stacks = get_fss_stacks()
-
+    findings = []
+    
     for bucket in s3buckets:
         if regexfilter and re.search(regexfilter, bucket):
             status = "SUCCESS"
@@ -78,9 +83,7 @@ def lambda_handler(event, context):
 
         s3arn = "arn:aws:s3:::" + bucket
         s3consoleurl = "https://s3.console.aws.amazon.com/s3/buckets/" + bucket
-        checksdata = {
-            "data": [
-                {
+        finding = {
                     "type": "checks",
                     "attributes": {
                         "rule-title": "C1 File Storage Security Enabled for Bucket",
@@ -113,11 +116,10 @@ def lambda_handler(event, context):
                         "rule": {"data": {"id": customcheckid, "type": "rules"}},
                     },
                 }
-            ]
-        }
+        findings.append(copy.deepcopy(finding))
 
-        bodyencoded = json.dumps(checksdata).encode("utf-8")
-        checksapi = f"https://{ccregion}-api.cloudconformity.com/v1/checks"
+    bodyencoded = json.dumps({"data": findings}).encode("utf-8")
+    checksapi = f"https://{ccregion}-api.cloudconformity.com/v1/checks"
 
-        r = http.request("POST", checksapi, body=bodyencoded, headers=conformityheaders)
-        print(r.data.decode("utf-8"))
+    r = http.request("POST", checksapi, body=bodyencoded, headers=conformityheaders)
+    print(r.data.decode("utf-8"))
